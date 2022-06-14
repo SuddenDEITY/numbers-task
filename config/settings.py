@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,8 +29,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CELERY_BROKER_URL = 'redis://numbers-task_redis:6379'
 
-# Application definition
+CELERY_ACCEPT_CONTENT = ['json'] 
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULE = {
+    "get_usd_price": {
+        "task": "script.tasks.get_usd_price",
+        "schedule": crontab(minute=0, hour=13),
+    },
+}
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -83,6 +93,13 @@ DATABASES = {
         'PASSWORD': 'postgres',
         'HOST': 'db',
         'PORT': 5432
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'cache:11211',
     }
 }
 

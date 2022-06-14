@@ -1,6 +1,29 @@
 version: '3.9'
 
 services:
+  celery:
+      build: .
+      command: celery -A config worker -B
+      volumes:
+        - .:/code
+      links:
+        - redis
+      depends_on:
+        - web
+        - redis
+  cache:
+    image: memcached
+    ports:
+      - "11211:11211"
+    entrypoint:
+      - memcached
+  redis:
+    image: redis
+    restart: always
+    container_name: 'numbers-task_redis'
+    command: redis-server
+    ports:
+      - '6379:6379'
   web:
    build: .
    command: python3 /code/manage.py runserver 0.0.0.0:8000
