@@ -1,4 +1,5 @@
 import os.path
+from re import U
 import httplib2 
 import apiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
@@ -6,16 +7,18 @@ from .models import Order
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
+from .tasks import get_usd_price
 
 
 CREDENTIALS_FILE = 'test-task-353212-fb8bb0700b60.json'
 
-def parse():
+def get_usd():
     usd_price = cache.get("usd_price")
     if not usd_price:
-        usd_price = 'chtoto'
-        #celery task который сует в кеш эту тему
+        get_usd_price.delay()
+    return usd_price
 
+def parse():
     # Читаем ключи из файла
     credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
     # Авторизуемся в системе
