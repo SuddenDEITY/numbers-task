@@ -1,0 +1,25 @@
+.table-wrapper {
+    width: 80%;
+    text-align: center;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+table {
+    width: 100%;
+    margin: auto;
+}
+thead tr{
+    background-color: black;
+    color: white;
+    font-size: 20px;
+}
+th, td {
+    height: 50px;
+}
+td {
+    background-color: lightblue;
+}
+td:last-child {
+    border-bottom: none;
+}

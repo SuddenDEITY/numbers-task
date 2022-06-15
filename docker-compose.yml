@@ -1,8 +1,21 @@
 version: '3.9'
 
 services:
+  frontend:
+    restart: always
+    command : npm start
+    container_name: front
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    depends_on:
+      - web
   celery:
-      build: .
+      build: ./backend/
+      restart: always
       command: celery -A config worker -B
       volumes:
         - .:/code
@@ -25,10 +38,14 @@ services:
     ports:
       - '6379:6379'
   web:
-   build: .
-   command: python3 /code/manage.py runserver 0.0.0.0:8000
+   build:
+      context: ./backend/
+      dockerfile: Dockerfile
+   command:  >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
    volumes:
-    - .:/code
+    - .:/backend
    ports:
     - 8000:8000
    depends_on:

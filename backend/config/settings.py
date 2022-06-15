@@ -33,10 +33,18 @@ CELERY_BROKER_URL = 'redis://numbers-task_redis:6379'
 
 CELERY_ACCEPT_CONTENT = ['json'] 
 CELERY_TASK_SERIALIZER = 'json'
+# Так как cbr обновляет курсы валют каждый день в 16-00 МСК (вроде), вызываем задачу get_usd_price
+# каждый день в 13-01 UTC (16-01 МСК)
+
+# Выполняем парсинг google sheets каждые 3 секунды
 CELERY_BEAT_SCHEDULE = {
     "get_usd_price": {
         "task": "script.tasks.get_usd_price",
-        "schedule": crontab(minute=0, hour=13),
+        "schedule": crontab(minute=1, hour=13),
+    },
+    "parse": {
+        "task": "script.tasks.parse",
+        "schedule": timedelta(seconds=3),
     },
 }
 
@@ -48,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'script.apps.ScriptConfig',
 ]
 
@@ -59,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -128,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -144,3 +154,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+)
+
+# Не загружаю их из env, так как в этом нет смысла в тестовом заданий
+BOT_TOKEN = '5503940773:AAGeakD300QX38gP1-FRlMlMbCmTtYAP5CQ'
+TG_CHAT_ID = '494627024'
